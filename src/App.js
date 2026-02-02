@@ -8,8 +8,8 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [editingBlogId, setEditingBlogId] = useState(null);
 
- const API_URL = "http://localhost:5050/api/blogs";
-// no port needed because of proxy
+  // ✅ USE RENDER ENV VARIABLE
+  const API_URL = `${process.env.REACT_APP_API}/api/blogs`;
 
   // Fetch blogs
   const fetchBlogs = async () => {
@@ -32,19 +32,27 @@ function App() {
   // Add or Update blog
   const submitBlog = async (e) => {
     e.preventDefault();
-    if (!title || !description) return alert("Please fill in all fields");
+
+    if (!title || !description) {
+      alert("Please fill in all fields");
+      return;
+    }
 
     try {
       const method = editingBlogId ? "PUT" : "POST";
-      const url = editingBlogId ? `${API_URL}/${editingBlogId}` : API_URL;
+      const url = editingBlogId
+        ? `${API_URL}/${editingBlogId}`
+        : API_URL;
 
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify({ title, description }),
       });
 
-      if (!res.ok) throw new Error("Failed to save blog");
+      if (!res.ok) throw new Error("Save failed");
 
       setTitle("");
       setDescription("");
@@ -61,10 +69,13 @@ function App() {
     if (!window.confirm("Are you sure you want to delete this blog?")) return;
 
     try {
-      const response = await fetch(`${API_URL}/${id}`, { method: "DELETE" });
-      if (!response.ok) throw new Error("Failed to delete blog");
+      const res = await fetch(`${API_URL}/${id}`, {
+        method: "DELETE",
+      });
 
-      setBlogs(blogs.filter(blog => blog._id !== id));
+      if (!res.ok) throw new Error("Delete failed");
+
+      setBlogs((prev) => prev.filter((b) => b._id !== id));
     } catch (error) {
       console.error(error);
       alert("Error deleting blog");
@@ -89,14 +100,17 @@ function App() {
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
-        <br />
+
         <textarea
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
-        <br />
-        <button type="submit">{editingBlogId ? "Update Blog" : "Add Blog"}</button>
+
+        <button type="submit">
+          {editingBlogId ? "Update Blog" : "Add Blog"}
+        </button>
+
         {editingBlogId && (
           <button
             type="button"
@@ -112,6 +126,7 @@ function App() {
       </form>
 
       <h3>Blog Posts</h3>
+
       {loading ? (
         <p>Loading...</p>
       ) : blogs.length === 0 ? (
@@ -121,7 +136,9 @@ function App() {
           <div key={blog._id} className="blog-card">
             <h4>{blog.title}</h4>
             <p>{blog.description}</p>
-            <small>{new Date(blog.createdAt).toLocaleString()}</small>
+            <small>
+              {new Date(blog.createdAt).toLocaleString()}
+            </small>
             <br />
             <button onClick={() => startEdit(blog)}>Edit</button>
             <button onClick={() => deleteBlog(blog._id)}>Delete</button>
