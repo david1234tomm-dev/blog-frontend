@@ -9,7 +9,12 @@ function App() {
   const [editingBlogId, setEditingBlogId] = useState(null);
 
   // ✅ USE RENDER ENV VARIABLE
-  const API_URL = `${process.env.REACT_APP_API}/api/blogs`;
+  //const API_URL = `${process.env.REACT_APP_API}/api/blogs`;
+
+
+  
+  const API_URL = "https://blog-backend-wjd5.onrender.com/api/blogs";
+
 
   // Fetch blogs
   const fetchBlogs = async () => {
